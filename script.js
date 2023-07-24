@@ -14,7 +14,7 @@ function apiCall(call){
 	const request=new XMLHttpRequest();
 	request.open("GET",`${url}&t=${call}`);
 	request.send();
-	request.onreadystatechange=function(e){
+	request.onreadystatechange=function(){
 		if(request.status===200){
 			var data=JSON.parse(request.responseText);
 			favoriteMovies.push(data);
