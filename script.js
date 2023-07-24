@@ -14,9 +14,9 @@ function apiCall(call){
 	const request=new XMLHttpRequest();
 	request.open("GET",`${url}&t=${call}`);
 	request.send();
-	request.onload=function(){
+	request.onreadystatechange=function(e){
 		if(request.status===200){
-			var data=JSON.parse(request.response);
+			var data=JSON.parse(request.responseText);
 			favoriteMovies.push(data);
 				if(data.Title){
 				    InfoSpace.innerHTML=`
