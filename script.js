@@ -11,11 +11,13 @@ const favoriteMovies=[];
 var count=0;
 
 function apiCall(call){
-	$.ajax({
-			method:"GET",
-			url:url+"&t="+call,
-			success:function(data){
-				favoriteMovies.push(data);
+	const request=new XMLHttpRequest();
+	request.open("GET",`${url}&t=${call}`);
+	request.send();
+	request.onload=function(){
+		if(request.status===200){
+			var data=JSON.parse(request.response);
+			favoriteMovies.push(data);
 				if(data.Title){
 				    InfoSpace.innerHTML=`
 				    <img src="${data.Poster}" alt="Image not available">
@@ -31,8 +33,8 @@ function apiCall(call){
 			    }else {
 			    	InfoSpace.innerHTML=`<h2>Movie Info Not Found!!!<h2><h4>Check your spell Human!!!<h4>`
 			    }
-			}
-	});
+		}
+	}
 };
 
 
