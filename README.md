@@ -5,7 +5,7 @@ This is sakthivel k.
 
 I have build my ever third project as a beginer which IMDB clone application.
 
-My IMDB clone application makes an api call and coolect the detail form the database as a JSON object.
+My IMDB clone application makes an api call and collect the detail form the database and we will get a JSON object with movie details init.
 
 I have render ther object file with some functions and appedned into html file,
 
