@@ -12,7 +12,7 @@ var apiKey="33f48d46";
 
 // URL for fetching desired movie from database
 
-var url="http://www.omdbapi.com/?apikey="+apiKey;
+var url="https://www.omdbapi.com/?apikey="+apiKey;
 
 // Favorite movies array/list 
 
