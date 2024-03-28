@@ -1,140 +1,214 @@
-var taskArray = []
-const taskList=document.getElementById('task-space');
-const addTaskInp=document.getElementById('addingTask');
-const taskCounter=document.getElementById('task-count');
+// Fetching the search box div
 
-//initially setting localstorage taskarray as empty array
-localStorage.setItem("taskarray",JSON.stringify([]))
+const getInput=document.querySelector(".search-box");
 
-// The function which will take the input and simply append a <li> tag to our html file
+// Fetching the space div, where movie info will be shown
 
-function MakeVisibleTheTask(task){
-	const li=document.createElement("li");
+const InfoSpace=document.querySelector(".space");
 
-	// Creating <li> tag
-	li.innerHTML=`
-	    <input type="checkbox" id="${task.id}" data-id="12" class="custom-checkbox" ${task.status?"checked":""}/>
-        <label for="${task.id}"><p>${task.text}</p></label>
-        <img src="bin.svg" class="delete" data-id="${task.id}">
-    `;
+// Api key from OMDB
 
-    // Inserting <li> tag to the html file
+var apiKey="33f48d46";
 
-	taskList.append(li)
+// URL for fetching desired movie from database
+
+var url="https://www.omdbapi.com/?apikey="+apiKey;
+
+// Favorite movies array/list 
+
+const favoriteMovies=[];
+
+// Count of how many favorite movie has been added
+
+var count=0;
+
+let currentMovie=JSON.parse(localStorage.getItem("movieData"));
+
+function showCurrentMovie(movieData){
+	// Appending li tag to the html in space div
+
+	InfoSpace.innerHTML=`
+	<img class="movie-poster" src="${movieData.Poster}" alt="Image not available">
+	<img class="add-to-fav-button" src="like.svg">
+	<ul>
+		<li><p>Movie : ${movieData.Title}</p></li>
+		<li><p>Director : ${movieData.Director}</p></li>
+		<li><p>Actors : ${movieData.Actors}</p></li>
+		<li><p>Released on : ${movieData.Year}</p></li>
+		<li><p>Genre of movie: ${movieData.Genre}</p></li>
+	</ul>`
+	console.log("INSERTION DONE")
+	console.log(currentMovie)
+
+}
+showCurrentMovie(currentMovie);
+
+// This function for making API calls
+
+function apiCall(call){
+	// Create a http request
+
+	const request=new XMLHttpRequest();
+
+	// Open that by passing "GET", url with desired movie name
+
+	request.open("GET",`${url}&t=${call}`);
+
+	// To respond back
+
+	request.send();
+
+	// Proceesing the recieved responseText
+
+	request.onload=function(){
+
+		// Checking whether the request is active or not
+
+		if(request.status===200){
+
+			var data=JSON.parse(request.responseText);
+			localStorage.setItem("movieData",JSON.stringify(data))
+			const movieData = JSON.parse(localStorage.getItem("movieData"))
+			if(movieData.Title){
+				console.log("API CALL DONE")
+				showCurrentMovie(movieData)
+			}else {
+
+				// Incase of errors and movies not found
+
+				InfoSpace.innerHTML=`<h2>Movie Info Not Found!!!<h2><h4>Check your spell Human!!!<h4>`
+			}
+		}
+	}
 };
 
-
-// Rendering the task list whenever task added or removed
-
-function renderList(){
-
-	// Remove the task
-	taskList.innerHTML="";
+function addToFav(favMov){
 	
-	// updating taskArray before rerender the app
-	taskArray = JSON.parse(localStorage.getItem("taskarray"));
-	
+	for(let movie = 0 ; movie<=favMov.length; movie++){
 
-	// Loop over the tasks present in taskArray and call MakeVisibleTheTask function and it will create the list
-	for(let i=0; i<taskArray.length; i++){
-		MakeVisibleTheTask(taskArray[i]);
+		// Creating an element div
+
+		var div=document.createElement("div");
+
+		// Appending the tags in it
+		if(true ){
+
+			div.innerHTML=`<div id="${idCreation}" class="item">
+					<a class="dropdown-item" style="text-decoration:capitalize; " href="#">${favMov[movie].Title}</a>
+					<img src="trash.png" class="img" id="${idCreation}">
+				</div>`
+
+			// Appending the div into dropdown-menu div
+
+			document.querySelector(".dropdown-menu").appendChild(div);
+
+			// Appending className into dropdown div
+			document.querySelector(".dropdown").classList.add("dropdown-div-anim")
+
+			// setTimeout function for removing the className that appended earlier
+			// So that the animation will be available for another liked movie 
+
+			function removeClass() {
+				document.querySelector(".dropdown").classList.remove("dropdown-div-anim")
+			}
+
+			setTimeout(removeClass,1000)
+			count+=1
+		}
+
 	}
-	// Updating task counter, how many taks left in the taskArray
-	taskCounter.innerHTML=`<p>${taskArray.length}</p>`;
-	
-	
-
-	
-}
-
-renderList();
-
-// To remove the task from the list
-
-function removeTask(TaskID){
-
-	// filter the specfic task and removing
-
-	const newTasks=taskArray.filter(function(task){
-		return task.id !== TaskID;
-	});
-
-	// Updating the new taskArray with the filtered list
-	localStorage.setItem("taskarray",JSON.stringify(newTasks))
-
-	renderList();
-
-	notification("Task removed successfully")
 
 }
+// This function for removing favorite movies favoriteMovies list
 
-// Adding taks to list
+function removeFromFav(id){
 
-function addTask(newtask){
-	if(newtask){
-		taskArray.push(newtask);
-		localStorage.setItem("taskarray",JSON.stringify(taskArray))
-		renderList();
-		notification("Task added successfully");
-		return;
-	}
-	notification("Task connot be added")
+	// Fetching the particular div
+
+	var child=document.getElementById(`${id}`)
+
+	// Remove
+
+	child.remove()
 }
 
-// Notification on actions
+//Function for handling keypresses
 
-function notification(msg){
-	alert(msg);
+function keyPressHandler(presses) {
+
+	// When we press enter after entering movie name
+
+	if(presses.key==="Enter"){
+
+		// Collecting the movie name
+
+		var movieName=presses.target.value;
+
+		// Initialinzing API call with the Movie Name
+
+		apiCall(movieName)
+    }
 };
 
-// Keypress Event handler
+// Function for handling the mouse clicks
 
-function taskNameInitialize(text,event) {
-		if(!text){
-			notification("Please enter some task");
-			return;
-		}
-		const Task={
-			text:text,
-			id:Date.now().toString(),
-			status:false
-		}
-		event.target.value="";
-		addTask(Task);
-}
+function clicksHandler(clicks){
 
-function handleInputKeyPress(event){
-	if(event.key==="Enter"){
-		const text=event.target.value;
-		taskNameInitialize(text,event)
-	}
-}
+	// Collecting the target element/div
 
-// Mouse clicks handler
+    const target=clicks.target;
 
-function handleClicks(clickss){
-	const target = clickss.target;
-	if(target.className === "delete"){
-		const taskId= target.dataset.id;
-		removeTask(taskId);
+    // Will triggered when targets class name was search-button
+
+	if(target.className==="search-button"){
+
+		// Collecting the movie name
+
+		var movieName=getInput.value
+
+		// Making api call with movie name
+
+		apiCall(movieName)
 		return;
-	} else if(target.className==="clear-all-task"){
-		localStorage.setItem("taskarray",JSON.stringify([]))
-		renderList();
-		return;
-	} else if (target.className==="input-img"){
-		taskNameInitialize(addTaskInp.value,clickss)
-
-	} else if (target.className==="complete-all-task-btn"){
-		taskArray.filter((item,i)=>{
-			item.status = true
-		})
-		localStorage.setItem("taskarray",JSON.stringify(taskArray))
-		renderList();
 	}
-}
 
-// addEventListeners
+    // Will triggered when we press the like button and movie will be added in favorite movie list
 
-addTaskInp.addEventListener("keyup",handleInputKeyPress);
-document.addEventListener("click",handleClicks);
+	else if(target.className==="add-to-fav-button"){
+
+		// Generating unique ID for each movies liked movies
+
+		let idCreation=Date.now()
+
+		// Running a loop so each times movies will be added in favoriteMovies based on the counts
+		
+		favoriteMovies.push(currentMovie);
+		console.log(favoriteMovies,"ssss")
+		localStorage.setItem("favMovies",JSON.stringify(favoriteMovies));
+
+		let favMov = JSON.parse(localStorage.getItem("favMovies"))
+
+		addToFav(favMov)
+
+		
+	    return;
+	}
+
+	// Triggered when we clicks the delete button that present in the favoriteMovies
+
+	else if(target.className==="img"){
+
+		// Initialing the removeFromFav function with a target id
+
+		removeFromFav(target.id)
+		return;
+	}
+};
+
+// Event handler for keypress
+
+getInput.addEventListener("keyup",keyPressHandler)
+
+// Event handler for clicks
+
+document.addEventListener("click",clicksHandler)
